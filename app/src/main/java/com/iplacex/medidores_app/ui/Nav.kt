@@ -32,9 +32,9 @@ fun AppNav(navController: NavHostController = rememberNavController()) {
                 onValueChange = vm::updateDraft,
                 onSave = {
                     vm.saveDraft()
-                    navController.popBackStack()
+                    navController.popBackStack(Routes.LIST, false)
                 },
-                onCancel = { navController.popBackStack() }
+                onCancel = { navController.popBackStack(Routes.LIST, false) }
             )
         }
     }

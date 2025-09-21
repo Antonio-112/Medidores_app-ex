@@ -21,7 +21,7 @@ fun FormScreen(
     onCancel: () -> Unit
 ) {
     Scaffold(
-        topBar = { SmallTopAppBar(title = { Text("Nueva lectura") }) }
+        topBar = { TopAppBar(title = { Text("Nueva lectura") }) }
     ) { inner ->
         Column(
             Modifier.padding(inner).padding(16.dp),

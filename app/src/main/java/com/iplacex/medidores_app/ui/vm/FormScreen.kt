@@ -1,4 +1,4 @@
-package com.iplacex.medidores_app.ui.form
+package com.iplacex.medidores_app.ui.vm
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.iplacex.medidores_app.domain.TipoMedidor
-import com.iplacex.medidores_app.ui.vm.UiState
 import com.iplacex.medidores_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)

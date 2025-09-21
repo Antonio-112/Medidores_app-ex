@@ -10,8 +10,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.iplacex.medidores_app.ui.form.FormScreen
-import com.iplacex.medidores_app.ui.list.ListScreen
+import com.iplacex.medidores_app.ui.vm.FormScreen
+import com.iplacex.medidores_app.ui.vm.ListScreen
 import com.iplacex.medidores_app.ui.vm.AppViewModel
 
 private object Routes {

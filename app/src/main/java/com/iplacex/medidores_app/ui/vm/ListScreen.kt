@@ -1,4 +1,4 @@
-package com.iplacex.medidores_app.ui.list
+package com.iplacex.medidores_app.ui.vm
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
@@ -27,9 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.iplacex.medidores_app.R
 import com.iplacex.medidores_app.domain.TipoMedidor
-import com.iplacex.medidores_app.ui.vm.UiLectura
-import com.iplacex.medidores_app.ui.vm.UiMedidor
-import com.iplacex.medidores_app.ui.vm.UiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

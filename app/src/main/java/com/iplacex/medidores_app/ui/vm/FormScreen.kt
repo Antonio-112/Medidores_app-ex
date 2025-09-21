@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardOptions
-import androidx.compose.ui.text.input.KeyboardType
+// import androidx.compose.ui.text.input.KeyboardOptions
+// import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.iplacex.medidores_app.domain.TipoMedidor
 import com.iplacex.medidores_app.ui.vm.UiState
@@ -21,7 +21,7 @@ fun FormScreen(
     onCancel: () -> Unit
 ) {
     Scaffold(
-        topBar = { SmallTopAppBar(title = { Text("Nueva lectura") }) }
+        topBar = { TopAppBar(title = { Text("Nueva lectura") }) }
     ) { inner ->
         Column(
             Modifier.padding(inner).padding(16.dp),
@@ -78,7 +78,7 @@ fun FormScreen(
                 value = state.draftValor,
                 onValueChange = { onValueChange(null, null, null, it) },
                 label = { Text(valorLabel) },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                //keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

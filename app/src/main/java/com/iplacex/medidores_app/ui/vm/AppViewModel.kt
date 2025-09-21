@@ -1,5 +1,7 @@
 package com.iplacex.medidores_app.ui.vm
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -35,6 +37,7 @@ data class UiState(
     val draftUnidad: String = ""
 )
 
+@RequiresApi(Build.VERSION_CODES.O)
 class AppViewModel(
     private val medidorRepository: MedidorRepository = ServiceLocator.medidorRepository,
     private val lecturaRepository: LecturaRepository = ServiceLocator.lecturaRepository
@@ -47,6 +50,7 @@ class AppViewModel(
         cargarDatosIniciales()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun cargarDatosIniciales() {
         val medidores = medidorRepository.obtenerMedidores()
         val lecturas = lecturaRepository.obtenerLecturas()
@@ -57,6 +61,7 @@ class AppViewModel(
             draftMedidorId = medidorInicial?.id,
             draftTipo = medidorInicial?.tipo,
             draftFecha = LocalDate.now().toString(),
+            )
     }
 
     fun updateDraft(
@@ -83,6 +88,7 @@ class AppViewModel(
         )
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun saveDraft() {
         val medidorId = uiState.draftMedidorId ?: return
         val tipo = uiState.draftTipo ?: return
@@ -107,7 +113,6 @@ class AppViewModel(
         uiState = uiState.copy(
             lecturas = lecturasActualizadas,
             draftFecha = LocalDate.now().toString(),
-            draftFecha = "",
         )
     }
 

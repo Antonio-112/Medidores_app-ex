@@ -1,5 +1,7 @@
 package com.iplacex.medidores_app.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -15,6 +17,7 @@ private object Routes {
     const val FORM = "form"
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNav(navController: NavHostController = rememberNavController()) {
     val vm: AppViewModel = viewModel()

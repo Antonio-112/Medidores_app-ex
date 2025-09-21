@@ -1,11 +1,11 @@
 package com.iplacex.medidores_app.domain
 
 import java.time.LocalDate
-import java.util.UUID
 
 data class Lectura(
-    val id: String = UUID.randomUUID().toString(),
+    val id: Long = 0,
     val medidorId: String,
+    val tipo: TipoMedidor,
     val fecha: LocalDate,
     val valor: Double
 )

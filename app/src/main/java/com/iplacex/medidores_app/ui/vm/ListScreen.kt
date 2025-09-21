@@ -14,13 +14,14 @@ import com.iplacex.medidores_app.ui.vm.UiLectura
 import com.iplacex.medidores_app.ui.vm.UiMedidor
 import com.iplacex.medidores_app.ui.vm.UiState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
     state: UiState,
     onAddClick: () -> Unit
 ) {
     Scaffold(
-        topBar = { SmallTopAppBar(title = { Text("Lecturas") }) },
+        topBar = { TopAppBar(title = { Text("Lecturas") }) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
                 Icon(Icons.Default.Add, contentDescription = "Agregar")

@@ -3,6 +3,8 @@ package com.iplacex.medidores_app.ui
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -22,16 +24,18 @@ private object Routes {
 fun AppNav(navController: NavHostController = rememberNavController()) {
     val vm: AppViewModel = viewModel()
 
+    val state by vm.uiState.collectAsState()
+
     NavHost(navController = navController, startDestination = Routes.LIST) {
         composable(Routes.LIST) {
             ListScreen(
-                state = vm.uiState,
+                state = state,
                 onAddClick = { navController.navigate(Routes.FORM) }
             )
         }
         composable(Routes.FORM) {
             FormScreen(
-                state = vm.uiState,
+                state = state,
                 onValueChange = vm::updateDraft,
                 onSave = {
                     vm.saveDraft()

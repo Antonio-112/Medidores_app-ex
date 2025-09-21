@@ -2,10 +2,8 @@ package com.iplacex.medidores_app.ui.vm
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.iplacex.medidores_app.data.ServiceLocator
 import com.iplacex.medidores_app.data.repository.LecturaRepository
 import com.iplacex.medidores_app.data.repository.MedidorRepository
@@ -16,10 +14,15 @@ import com.iplacex.medidores_app.domain.unidadMedida
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class UiMedidor(val id: String, val alias: String, val tipo: TipoMedidor)
 data class UiLectura(
-    val id: String,
+    val id: Long,
     val medidorId: String,
     val fecha: String,   // YYYY-MM-DD (texto, simple)
     val valor: String,   // texto; validaremos mínimo
@@ -43,25 +46,38 @@ class AppViewModel(
     private val lecturaRepository: LecturaRepository = ServiceLocator.lecturaRepository
 ) : ViewModel() {
 
-    var uiState by mutableStateOf(UiState())
-        private set
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     init {
         cargarDatosIniciales()
+        observarLecturas()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun cargarDatosIniciales() {
         val medidores = medidorRepository.obtenerMedidores()
-        val lecturas = lecturaRepository.obtenerLecturas()
         val medidorInicial = medidores.firstOrNull()
-        uiState = UiState(
-            medidores = medidores.map { it.toUi() },
-            lecturas = lecturas.map { it.toUi() },
-            draftMedidorId = medidorInicial?.id,
-            draftTipo = medidorInicial?.tipo,
-            draftFecha = LocalDate.now().toString(),
+        _uiState.update {
+            it.copy(
+                medidores = medidores.map { medidor -> medidor.toUi() },
+                draftMedidorId = medidorInicial?.id,
+                draftTipo = medidorInicial?.tipo,
+                draftFecha = LocalDate.now().toString(),
+                draftUnidad = medidorInicial?.tipo?.unidadMedida().orEmpty()
             )
+        }
+    }
+
+    private fun observarLecturas() {
+        viewModelScope.launch {
+            lecturaRepository.observarLecturas()
+                .collect { lecturas ->
+                    _uiState.update { state ->
+                        state.copy(lecturas = lecturas.map { it.toUi() })
+                    }
+                }
+        }
     }
 
     fun updateDraft(
@@ -70,30 +86,34 @@ class AppViewModel(
         fecha: String? = null,
         valor: String? = null
     ) {
-        val nuevoMedidorId = medidorId ?: uiState.draftMedidorId
+        val currentState = _uiState.value
+        val nuevoMedidorId = medidorId ?: currentState.draftMedidorId
         val medidorSeleccionado = nuevoMedidorId?.let { id ->
-            uiState.medidores.firstOrNull { it.id == id }
+            currentState.medidores.firstOrNull { it.id == id }
         }
         val nuevoTipo = when {
             tipo != null -> tipo
             medidorId != null -> medidorSeleccionado?.tipo
-            else -> uiState.draftTipo
+            else -> currentState.draftTipo
         }
-        uiState = uiState.copy(
-            draftMedidorId = nuevoMedidorId,
-            draftTipo = nuevoTipo,
-            draftFecha = fecha ?: uiState.draftFecha,
-            draftValor = valor ?: uiState.draftValor,
-            draftUnidad = nuevoTipo?.unidadMedida().orEmpty()
-        )
+        _uiState.update {
+            it.copy(
+                draftMedidorId = nuevoMedidorId,
+                draftTipo = nuevoTipo,
+                draftFecha = fecha ?: it.draftFecha,
+                draftValor = valor ?: it.draftValor,
+                draftUnidad = nuevoTipo?.unidadMedida().orEmpty()
+            )
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun saveDraft() {
-        val medidorId = uiState.draftMedidorId ?: return
-        val tipo = uiState.draftTipo ?: return
-        val fechaTexto = uiState.draftFecha.trim()
-        val valorTexto = uiState.draftValor.trim()
+        val currentState = _uiState.value
+        val medidorId = currentState.draftMedidorId ?: return
+        val tipo = currentState.draftTipo ?: return
+        val fechaTexto = currentState.draftFecha.trim()
+        val valorTexto = currentState.draftValor.trim()
         if (fechaTexto.isBlank() || valorTexto.isBlank()) return
 
         val fecha = try {
@@ -105,22 +125,28 @@ class AppViewModel(
 
         val nuevaLectura = Lectura(
             medidorId = medidorId,
+            tipo = tipo,
             fecha = fecha,
             valor = valor
         )
-        lecturaRepository.guardar(nuevaLectura)
-        val lecturasActualizadas = lecturaRepository.obtenerLecturas().map { it.toUi() }
-        uiState = uiState.copy(
-            lecturas = lecturasActualizadas,
-            draftFecha = LocalDate.now().toString(),
-        )
+        viewModelScope.launch {
+            lecturaRepository.guardar(nuevaLectura)
+            _uiState.update {
+                it.copy(
+                    draftFecha = LocalDate.now().toString(),
+                    draftValor = ""
+                )
+            }
+        }
     }
 
     private fun Medidor.toUi() = UiMedidor(id = id, alias = alias, tipo = tipo)
 
     private fun Lectura.toUi(): UiLectura {
         val medidor = medidorRepository.buscarPorId(medidorId)
-        val unidad = medidor?.tipo?.unidadMedida().orEmpty()
+        val unidad = tipo.unidadMedida().ifBlank {
+            medidor?.tipo?.unidadMedida().orEmpty()
+        }
         return UiLectura(
             id = id,
             medidorId = medidorId,

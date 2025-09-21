@@ -49,7 +49,9 @@ private fun Lista(lecturas: List<UiLectura>, medidores: Map<String, UiMedidor>) 
                     val m = medidores[l.medidorId]
                     Text(m?.alias ?: "Medidor", fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(4.dp))
-                    Text("Fecha: ${l.fecha}  •  Valor: ${l.valor} ${l.unidad}")
+                    val unidad = l.unidad
+                    val unidadTexto = if (unidad.isBlank()) "" else " ${unidad}"
+                    Text("Fecha: ${l.fecha}  •  Valor: ${l.valor}${unidadTexto}")
                 }
             }
         }

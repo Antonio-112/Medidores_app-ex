@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">Medidores</string>
+    <string name="form_top_bar_title">Nueva lectura</string>
+    <string name="form_meter_label">Medidor</string>
+    <string name="form_date_label">Fecha (AAAA-MM-DD)</string>
+    <string name="form_value_label">Valor</string>
+    <string name="form_value_label_with_unit">Valor (%1$s)</string>
+    <string name="form_cancel">Cancelar</string>
+    <string name="form_save">Guardar</string>
+    <string name="list_top_bar_title">Lecturas</string>
+    <string name="list_add_content_description">Agregar</string>
+    <string name="list_empty_state">Sin lecturas. Toca + para agregar.</string>
+    <string name="list_default_meter_name">Medidor</string>
+    <string name="list_reading_details">Fecha: %1$s  •  Valor: %2$s%3$s</string>
 </resources>

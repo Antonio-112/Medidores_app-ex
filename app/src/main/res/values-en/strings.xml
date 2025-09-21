@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Meters</string>
+    <string name="form_top_bar_title">New reading</string>
+    <string name="form_meter_label">Meter</string>
+    <string name="form_date_label">Date (YYYY-MM-DD)</string>
+    <string name="form_value_label">Value</string>
+    <string name="form_value_label_with_unit">Value (%1$s)</string>
+    <string name="form_cancel">Cancel</string>
+    <string name="form_save">Save</string>
+    <string name="list_top_bar_title">Readings</string>
+    <string name="list_add_content_description">Add</string>
+    <string name="list_empty_state">No readings. Tap + to add.</string>
+    <string name="list_default_meter_name">Meter</string>
+    <string name="list_reading_details">Date: %1$s  •  Value: %2$s%3$s</string>
+</resources>

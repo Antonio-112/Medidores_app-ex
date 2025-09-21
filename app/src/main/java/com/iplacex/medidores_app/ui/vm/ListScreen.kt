@@ -8,8 +8,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.iplacex.medidores_app.R
 import com.iplacex.medidores_app.ui.vm.UiLectura
 import com.iplacex.medidores_app.ui.vm.UiMedidor
 import com.iplacex.medidores_app.ui.vm.UiState
@@ -21,16 +23,16 @@ fun ListScreen(
     onAddClick: () -> Unit
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Lecturas") }) },
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.list_top_bar_title)) }) },
         floatingActionButton = {
             FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Agregar")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.list_add_content_description))
             }
         }
     ) { inner ->
         Box(Modifier.padding(inner).fillMaxSize()) {
             if (state.lecturas.isEmpty()) {
-                Text("Sin lecturas. Toca + para agregar.", modifier = Modifier.padding(24.dp))
+                Text(stringResource(R.string.list_empty_state), modifier = Modifier.padding(24.dp))
             } else {
                 Lista(state.lecturas, state.medidores.associateBy { it.id })
             }
@@ -48,11 +50,11 @@ private fun Lista(lecturas: List<UiLectura>, medidores: Map<String, UiMedidor>) 
             ElevatedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp)) {
                     val m = medidores[l.medidorId]
-                    Text(m?.alias ?: "Medidor", fontWeight = FontWeight.SemiBold)
+                    Text(m?.alias ?: stringResource(R.string.list_default_meter_name), fontWeight = FontWeight.SemiBold)
                     Spacer(Modifier.height(4.dp))
                     val unidad = l.unidad
                     val unidadTexto = if (unidad.isBlank()) "" else " ${unidad}"
-                    Text("Fecha: ${l.fecha}  •  Valor: ${l.valor}${unidadTexto}")
+                    Text(stringResource(R.string.list_reading_details, l.fecha, l.valor, unidadTexto))
                 }
             }
         }

@@ -7,8 +7,10 @@ import androidx.compose.ui.Modifier
 // import androidx.compose.ui.text.input.KeyboardOptions
 // import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.iplacex.medidores_app.domain.TipoMedidor
 import com.iplacex.medidores_app.ui.vm.UiState
+import com.iplacex.medidores_app.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,7 +23,7 @@ fun FormScreen(
     onCancel: () -> Unit
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Nueva lectura") }) }
+        topBar = { TopAppBar(title = { Text(stringResource(R.string.form_top_bar_title)) }) }
     ) { inner ->
         Column(
             Modifier.padding(inner).padding(16.dp),
@@ -34,7 +36,7 @@ fun FormScreen(
                     value = state.medidores.firstOrNull { it.id == state.draftMedidorId }?.alias ?: "",
                     onValueChange = {},
                     modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    label = { Text("Medidor") },
+                    label = { Text(stringResource(R.string.form_meter_label)) },
                     readOnly = true
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -64,15 +66,15 @@ fun FormScreen(
             OutlinedTextField(
                 value = state.draftFecha,
                 onValueChange = { onValueChange(null, null, it, null) },
-                label = { Text("Fecha (YYYY-MM-DD)") },
+                label = { Text(stringResource(R.string.form_date_label)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
 
             val valorLabel = if (state.draftUnidad.isBlank()) {
-                "Valor"
+                stringResource(R.string.form_value_label)
             } else {
-                "Valor (${state.draftUnidad})"
+                stringResource(R.string.form_value_label_with_unit, state.draftUnidad)
             }
             OutlinedTextField(
                 value = state.draftValor,
@@ -84,14 +86,14 @@ fun FormScreen(
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(onClick = onCancel) { Text("Cancelar") }
+                OutlinedButton(onClick = onCancel) { Text(stringResource(R.string.form_cancel)) }
                 Button(
                     onClick = onSave,
                     enabled = state.draftMedidorId != null &&
                             state.draftTipo != null &&
                             state.draftFecha.isNotBlank() &&
                             state.draftValor.isNotBlank()
-                ) { Text("Guardar") }
+                ) { Text(stringResource(R.string.form_save)) }
             }
         }
     }

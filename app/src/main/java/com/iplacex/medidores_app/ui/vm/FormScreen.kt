@@ -43,7 +43,7 @@ fun FormScreen(
                             text = { Text(m.alias) },
                             onClick = {
                                 expanded = false
-                                onValueChange(m.id, null, null, null)
+                                onValueChange(m.id, m.tipo, null, null)
                             }
                         )
                     }
@@ -69,10 +69,15 @@ fun FormScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            val valorLabel = if (state.draftUnidad.isBlank()) {
+                "Valor"
+            } else {
+                "Valor (${state.draftUnidad})"
+            }
             OutlinedTextField(
                 value = state.draftValor,
                 onValueChange = { onValueChange(null, null, null, it) },
-                label = { Text("Valor") },
+                label = { Text(valorLabel) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()

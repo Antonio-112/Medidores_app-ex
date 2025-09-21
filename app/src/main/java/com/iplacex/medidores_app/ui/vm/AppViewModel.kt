@@ -4,7 +4,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.iplacex.medidores_app.domain.TipoMedidor // usa tu enum existente
+import com.iplacex.medidores_app.data.ServiceLocator
+import com.iplacex.medidores_app.data.repository.LecturaRepository
+import com.iplacex.medidores_app.data.repository.MedidorRepository
+import com.iplacex.medidores_app.domain.Lectura
+import com.iplacex.medidores_app.domain.Medidor
+import com.iplacex.medidores_app.domain.TipoMedidor
+import com.iplacex.medidores_app.domain.unidadMedida
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
+import java.util.Locale
 
 data class UiMedidor(val id: String, val alias: String, val tipo: TipoMedidor)
 data class UiLectura(
@@ -26,19 +35,30 @@ data class UiState(
     val draftUnidad: String = ""
 )
 
-class AppViewModel : ViewModel() {
+class AppViewModel(
+    private val medidorRepository: MedidorRepository = ServiceLocator.medidorRepository,
+    private val lecturaRepository: LecturaRepository = ServiceLocator.lecturaRepository
+) : ViewModel() {
 
-    var uiState by mutableStateOf(
-        UiState(
-            medidores = listOf(
-                UiMedidor("m1", "Casa - Agua", TipoMedidor.AGUA),
-                UiMedidor("m2", "Depto - Luz", TipoMedidor.LUZ),
-                UiMedidor("m3", "Casa - Gas",  TipoMedidor.GAS)
-            ),
-            draftMedidorId = "m1"
-        )
-    )
+    var uiState by mutableStateOf(UiState())
         private set
+
+    init {
+        cargarDatosIniciales()
+    }
+
+    private fun cargarDatosIniciales() {
+        val medidores = medidorRepository.obtenerMedidores()
+        val lecturas = lecturaRepository.obtenerLecturas()
+        val medidorInicial = medidores.firstOrNull()
+        uiState = UiState(
+            medidores = medidores.map { it.toUi() },
+            lecturas = lecturas.map { it.toUi() },
+            draftMedidorId = medidorInicial?.id,
+            draftTipo = medidorInicial?.tipo,
+            draftUnidad = medidorInicial?.tipo?.unidadMedida().orEmpty()
+        )
+    }
 
     fun updateDraft(
         medidorId: String? = null,
@@ -46,38 +66,64 @@ class AppViewModel : ViewModel() {
         fecha: String? = null,
         valor: String? = null
     ) {
-        val t = tipo ?: uiState.draftTipo
+        val nuevoMedidorId = medidorId ?: uiState.draftMedidorId
+        val medidorSeleccionado = nuevoMedidorId?.let { id ->
+            uiState.medidores.firstOrNull { it.id == id }
+        }
+        val nuevoTipo = when {
+            tipo != null -> tipo
+            medidorId != null -> medidorSeleccionado?.tipo
+            else -> uiState.draftTipo
+        }
         uiState = uiState.copy(
-            draftMedidorId = medidorId ?: uiState.draftMedidorId,
-            draftTipo = t,
+            draftMedidorId = nuevoMedidorId,
+            draftTipo = nuevoTipo,
             draftFecha = fecha ?: uiState.draftFecha,
             draftValor = valor ?: uiState.draftValor,
-            draftUnidad = when (t) {
-                TipoMedidor.AGUA, TipoMedidor.GAS -> "m³"
-                TipoMedidor.LUZ -> "kWh"
-                null -> ""
-            }
+            draftUnidad = nuevoTipo?.unidadMedida().orEmpty()
         )
     }
 
     fun saveDraft() {
-        val mId = uiState.draftMedidorId ?: return
+        val medidorId = uiState.draftMedidorId ?: return
         val tipo = uiState.draftTipo ?: return
-        if (uiState.draftFecha.isBlank() || uiState.draftValor.isBlank()) return
+        val fechaTexto = uiState.draftFecha
+        val valorTexto = uiState.draftValor
+        if (fechaTexto.isBlank() || valorTexto.isBlank()) return
 
-        val nueva = UiLectura(
-            id = "lec_${System.currentTimeMillis()}",
-            medidorId = mId,
-            fecha = uiState.draftFecha,
-            valor = uiState.draftValor,
-            unidad = when (tipo) {
-                TipoMedidor.AGUA, TipoMedidor.GAS -> "m³"
-                TipoMedidor.LUZ -> "kWh"
-            }
+        val fecha = try {
+            LocalDate.parse(fechaTexto)
+        } catch (ex: DateTimeParseException) {
+            return
+        }
+        val valor = valorTexto.toDoubleOrNull() ?: return
+
+        val nuevaLectura = Lectura(
+            medidorId = medidorId,
+            fecha = fecha,
+            valor = valor
         )
+        lecturaRepository.guardar(nuevaLectura)
+        val lecturasActualizadas = lecturaRepository.obtenerLecturas().map { it.toUi() }
         uiState = uiState.copy(
-            lecturas = listOf(nueva) + uiState.lecturas,
-            draftValor = "" // limpiar el campo valor
+            lecturas = lecturasActualizadas,
+            draftFecha = "",
+            draftValor = "",
+            draftUnidad = tipo.unidadMedida()
+        )
+    }
+
+    private fun Medidor.toUi() = UiMedidor(id = id, alias = alias, tipo = tipo)
+
+    private fun Lectura.toUi(): UiLectura {
+        val medidor = medidorRepository.buscarPorId(medidorId)
+        val unidad = medidor?.tipo?.unidadMedida().orEmpty()
+        return UiLectura(
+            id = id,
+            medidorId = medidorId,
+            fecha = fecha.toString(),
+            valor = String.format(Locale.getDefault(), "%.2f", valor),
+            unidad = unidad
         )
     }
 }

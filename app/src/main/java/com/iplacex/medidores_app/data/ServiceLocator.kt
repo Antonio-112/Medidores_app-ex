@@ -1,19 +1,36 @@
 package com.iplacex.medidores_app.data
 
-import com.iplacex.medidores_app.data.local.DatabaseConnection
-import com.iplacex.medidores_app.data.local.InMemoryDatabaseConnection
-import com.iplacex.medidores_app.data.repository.InMemoryLecturaRepository
-import com.iplacex.medidores_app.data.repository.InMemoryMedidorRepository
+import android.content.Context
+import androidx.room.Room
+import com.iplacex.medidores_app.data.local.room.MedidoresDatabase
+import com.iplacex.medidores_app.data.repository.DefaultMedidorRepository
 import com.iplacex.medidores_app.data.repository.LecturaRepository
 import com.iplacex.medidores_app.data.repository.MedidorRepository
+import com.iplacex.medidores_app.data.repository.RoomLecturaRepository
 
 /**
- * Punto único de creación de dependencias. Más adelante se sustituirá la implementación en memoria
- * por una basada en base de datos sin modificar el resto de la app.
+ * Punto único de creación de dependencias. Expone repositorios respaldados por Room y
+ * recursos en memoria según corresponda.
  */
 object ServiceLocator {
-    private val connection: DatabaseConnection by lazy { InMemoryDatabaseConnection() }
+    private lateinit var applicationContext: Context
 
-    val medidorRepository: MedidorRepository by lazy { InMemoryMedidorRepository(connection) }
-    val lecturaRepository: LecturaRepository by lazy { InMemoryLecturaRepository(connection) }
+    fun initialize(context: Context) {
+        applicationContext = context.applicationContext
+    }
+
+    private val database: MedidoresDatabase by lazy {
+        check(::applicationContext.isInitialized) { "ServiceLocator no inicializado" }
+        Room.databaseBuilder(
+            applicationContext,
+            MedidoresDatabase::class.java,
+            MedidoresDatabase.NAME
+        ).build()
+    }
+
+    val medidorRepository: MedidorRepository by lazy { DefaultMedidorRepository() }
+
+    val lecturaRepository: LecturaRepository by lazy {
+        RoomLecturaRepository(database.lecturaDao())
+    }
 }

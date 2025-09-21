@@ -57,8 +57,6 @@ class AppViewModel(
             draftMedidorId = medidorInicial?.id,
             draftTipo = medidorInicial?.tipo,
             draftFecha = LocalDate.now().toString(),
-            draftUnidad = medidorInicial?.tipo?.unidadMedida().orEmpty()
-        )
     }
 
     fun updateDraft(
@@ -109,8 +107,7 @@ class AppViewModel(
         uiState = uiState.copy(
             lecturas = lecturasActualizadas,
             draftFecha = LocalDate.now().toString(),
-            draftValor = "",
-            draftUnidad = tipo.unidadMedida()
+            draftFecha = "",
         )
     }
 

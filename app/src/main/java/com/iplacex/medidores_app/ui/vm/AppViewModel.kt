@@ -11,9 +11,9 @@ import com.iplacex.medidores_app.domain.Lectura
 import com.iplacex.medidores_app.domain.Medidor
 import com.iplacex.medidores_app.domain.TipoMedidor
 import com.iplacex.medidores_app.domain.unidadMedida
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
-import java.util.Locale
 
 data class UiMedidor(val id: String, val alias: String, val tipo: TipoMedidor)
 data class UiLectura(
@@ -56,8 +56,7 @@ class AppViewModel(
             lecturas = lecturas.map { it.toUi() },
             draftMedidorId = medidorInicial?.id,
             draftTipo = medidorInicial?.tipo,
-            draftUnidad = medidorInicial?.tipo?.unidadMedida().orEmpty()
-        )
+            draftFecha = LocalDate.now().toString(),
     }
 
     fun updateDraft(
@@ -87,8 +86,8 @@ class AppViewModel(
     fun saveDraft() {
         val medidorId = uiState.draftMedidorId ?: return
         val tipo = uiState.draftTipo ?: return
-        val fechaTexto = uiState.draftFecha
-        val valorTexto = uiState.draftValor
+        val fechaTexto = uiState.draftFecha.trim()
+        val valorTexto = uiState.draftValor.trim()
         if (fechaTexto.isBlank() || valorTexto.isBlank()) return
 
         val fecha = try {
@@ -96,7 +95,7 @@ class AppViewModel(
         } catch (ex: DateTimeParseException) {
             return
         }
-        val valor = valorTexto.toDoubleOrNull() ?: return
+        val valor = valorTexto.replace(',', '.').toDoubleOrNull() ?: return
 
         val nuevaLectura = Lectura(
             medidorId = medidorId,
@@ -107,9 +106,8 @@ class AppViewModel(
         val lecturasActualizadas = lecturaRepository.obtenerLecturas().map { it.toUi() }
         uiState = uiState.copy(
             lecturas = lecturasActualizadas,
+            draftFecha = LocalDate.now().toString(),
             draftFecha = "",
-            draftValor = "",
-            draftUnidad = tipo.unidadMedida()
         )
     }
 
@@ -122,7 +120,7 @@ class AppViewModel(
             id = id,
             medidorId = medidorId,
             fecha = fecha.toString(),
-            valor = String.format(Locale.getDefault(), "%.2f", valor),
+            valor = BigDecimal.valueOf(valor).stripTrailingZeros().toPlainString(),
             unidad = unidad
         )
     }
